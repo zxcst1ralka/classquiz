@@ -1,0 +1,18 @@
+<div class="card mb-3 border-{{ color }}">
+  <div class="card-body">
+    <div class="d-flex justify-content-between">
+      <h5 class="mb-2">{{ a.question.text }}</h5>
+      <span class="badge text-bg-{{ color }} align-self-start">
+        {{ a.earned|floatformat:"-2" }} / {{ a.question.points }}
+      </span>
+    </div>
+    <p class="mb-1"><b>{{ label }}.</b></p>
+    <p class="mb-1"><span class="text-muted">Ваш ответ:</span><br>{{ a.given|linebreaksbr }}</p>
+    <p class="mb-1"><span class="text-muted">Правильный ответ:</span><br>{{ a.correct_text|linebreaksbr }}</p>
+    {% if a.question.comment %}
+      <div class="alert alert-secondary mt-2 mb-0">
+        <b>Комментарий преподавателя:</b><br>{{ a.question.comment|linebreaksbr }}
+      </div>
+    {% endif %}
+  </div>
+</div>

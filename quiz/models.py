@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 
 class Test(models.Model):
@@ -92,3 +93,42 @@ class MatchPair(models.Model):
 
     def __str__(self):
         return f'{self.left} → {self.right}'
+        
+class Attempt(models.Model):
+    test = models.ForeignKey(
+        Test, on_delete=models.CASCADE,
+        related_name='attempts', verbose_name='Тест'
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, verbose_name='Пользователь'
+    )
+    student_name = models.CharField('Имя ученика', max_length=100, blank=True)
+    score = models.FloatField('Набрано баллов', default=0)
+    max_score = models.FloatField('Максимум баллов', default=0)
+    created_at = models.DateTimeField('Сдан', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Попытка'
+        verbose_name_plural = 'Попытки'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.student_name} — {self.test.title}'
+
+
+class AttemptAnswer(models.Model):
+    attempt = models.ForeignKey(
+        Attempt, on_delete=models.CASCADE,
+        related_name='answers', verbose_name='Попытка'
+    )
+    question = models.ForeignKey(
+        Question, on_delete=models.CASCADE, verbose_name='Вопрос'
+    )
+    given = models.TextField('Ответ ученика', blank=True)
+    correct_text = models.TextField('Правильный ответ', blank=True)
+    earned = models.FloatField('Баллы', default=0)
+
+    class Meta:
+        verbose_name = 'Ответ на вопрос'
+        verbose_name_plural = 'Ответы на вопросы'

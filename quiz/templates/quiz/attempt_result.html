@@ -1,0 +1,27 @@
+{% extends 'quiz/base.html' %}
+
+{% block title %}Результат: {{ attempt.test.title }}{% endblock %}
+
+{% block content %}
+<h1 class="h3">{{ attempt.test.title }}</h1>
+
+<div class="card mb-4">
+  <div class="card-body text-center">
+    <div class="text-muted">{{ attempt.student_name }}</div>
+    <div class="display-5">{{ attempt.score|floatformat:"-2" }} из {{ attempt.max_score|floatformat:"-2" }}</div>
+    <div class="text-muted">{{ percent }}%</div>
+  </div>
+</div>
+
+{% for a in answers %}
+  {% if a.earned >= a.question.points %}
+    {% include 'quiz/_answer_card.html' with a=a color='success' label='Верно' %}
+  {% elif a.earned > 0 %}
+    {% include 'quiz/_answer_card.html' with a=a color='warning' label='Частично верно' %}
+  {% else %}
+    {% include 'quiz/_answer_card.html' with a=a color='danger' label='Неверно' %}
+  {% endif %}
+{% endfor %}
+
+<a href="{% url 'quiz:test_list' %}" class="btn btn-outline-secondary w-100">К списку тестов</a>
+{% endblock %}

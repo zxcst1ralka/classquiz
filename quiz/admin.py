@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Test, Question, Choice, AcceptedAnswer, MatchPair
+from .models import Test, Question, Choice, AcceptedAnswer, MatchPair, Attempt, AttemptAnswer
 
 
 class ChoiceInline(admin.TabularInline):
@@ -27,3 +27,15 @@ class QuestionAdmin(admin.ModelAdmin):
     list_display = ('text', 'test', 'qtype', 'points', 'order')
     list_filter = ('test', 'qtype')
     inlines = [ChoiceInline, AcceptedAnswerInline, MatchPairInline]
+
+class AttemptAnswerInline(admin.TabularInline):
+    model = AttemptAnswer
+    extra = 0
+    can_delete = False
+    readonly_fields = ('question', 'given', 'correct_text', 'earned')
+
+@admin.register(Attempt)
+class AttemptAdmin(admin.ModelAdmin):
+    list_display = ('student_name', 'test', 'score', 'max_score', 'created_at')
+    list_filter = ('test',)
+    inlines = [AttemptAnswerInline]
