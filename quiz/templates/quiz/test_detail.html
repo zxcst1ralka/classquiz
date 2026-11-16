@@ -1,0 +1,59 @@
+{% extends 'quiz/base.html' %}
+
+{% block title %}{{ test.title }}{% endblock %}
+
+{% block content %}
+<h1 class="h3">{{ test.title }}</h1>
+<p class="text-muted">{{ test.description }}</p>
+
+<form method="post">
+  {% csrf_token %}
+
+  {% for q in questions %}
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="mb-1">{{ forloop.counter }}. {{ q.text }}</h5>
+      <p class="text-muted small">{{ q.get_qtype_display }} · баллов: {{ q.points }}</p>
+
+      {% if q.qtype == 'single' %}
+        {% for c in q.choices.all %}
+        <div class="form-check mb-1">
+          <input class="form-check-input" type="radio" name="q_{{ q.id }}" id="c{{ c.id }}" value="{{ c.id }}">
+          <label class="form-check-label" for="c{{ c.id }}">{{ c.text }}</label>
+        </div>
+        {% endfor %}
+
+      {% elif q.qtype == 'multiple' %}
+        {% for c in q.choices.all %}
+        <div class="form-check mb-1">
+          <input class="form-check-input" type="checkbox" name="q_{{ q.id }}" id="c{{ c.id }}" value="{{ c.id }}">
+          <label class="form-check-label" for="c{{ c.id }}">{{ c.text }}</label>
+        </div>
+        {% endfor %}
+
+      {% elif q.qtype == 'text' %}
+        <input type="text" class="form-control" name="q_{{ q.id }}" autocomplete="off">
+
+      {% elif q.qtype == 'number' %}
+        <input type="number" step="any" class="form-control" name="q_{{ q.id }}">
+
+      {% elif q.qtype == 'match' %}
+        {% for p in q.pairs.all %}
+        <div class="mb-2">
+          <label class="form-label mb-1">{{ p.left }}</label>
+          <select class="form-select" name="q_{{ q.id }}_{{ p.id }}">
+            <option value="">— выберите —</option>
+            {% for r in q.shuffled_rights %}
+            <option value="{{ r.id }}">{{ r.right }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <button type="submit" class="btn btn-primary btn-lg w-100">Сдать тест</button>
+</form>
+{% endblock %}

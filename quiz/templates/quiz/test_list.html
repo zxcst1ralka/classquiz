@@ -1,0 +1,16 @@
+{% extends 'quiz/base.html' %}
+
+{% block content %}
+<h1 class="h3 mb-3">Доступные тесты</h1>
+
+{% for t in tests %}
+  <a href="{% url 'quiz:test_detail' t.id %}" class="card mb-2 text-decoration-none">
+    <div class="card-body">
+      <h5 class="card-title mb-1">{{ t.title }}</h5>
+      <p class="card-text text-muted mb-0">{{ t.description }}</p>
+    </div>
+  </a>
+{% empty %}
+  <p class="text-muted">Тестов пока нет.</p>
+{% endfor %}
+{% endblock %}
