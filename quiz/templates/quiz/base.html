@@ -1,16 +1,26 @@
-<!doctype html>
+{% load static %}<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Онлайн-тесты{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Golos+Text:wght@400;500;600&family=Spectral:ital,wght@0,400;0,600;0,700;1,400&display=swap&subset=cyrillic" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>.form-check-input{width:1.25em;height:1.25em}.form-check{padding-top:.2rem;padding-bottom:.2rem}</style>
+  <link href="{% static 'quiz/academy.css' %}" rel="stylesheet">
 </head>
-<body class="bg-light">
-  <nav class="navbar navbar-dark bg-dark mb-4">
+<body>
+  <nav class="academy-nav">
     <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
-      <a class="navbar-brand" href="{% url 'quiz:home' %}">Онлайн-тесты</a>
+      <a class="brand" href="{% url 'quiz:home' %}">
+        <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M16 7c-3-2.2-7-2.6-11-2v18c4-.6 8-.2 11 2 3-2.2 7-2.6 11-2V5c-4-.6-8-.2-11 2Z" fill="#fff" stroke="#e6c76a" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M16 7v18" stroke="#e6c76a" stroke-width="1.6"/>
+          <path d="M8 11c2-.2 4 0 6 .8M8 15c2-.2 4 0 6 .8M18 11.8c2-.8 4-1 6-.8M18 15.8c2-.8 4-1 6-.8" stroke="#14214a" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        Онлайн-тесты
+      </a>
       {% if user.is_authenticated %}
       <div class="d-flex flex-wrap align-items-center gap-2">
         {% if user.is_staff %}
@@ -28,7 +38,7 @@
     </div>
   </nav>
 
-  <main class="container pb-5" style="max-width: {% block width %}760px{% endblock %};">
+  <main class="page container pb-5" style="max-width: {% block width %}760px{% endblock %};">
     {% if messages %}
       {% for message in messages %}
         <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}">{{ message }}</div>

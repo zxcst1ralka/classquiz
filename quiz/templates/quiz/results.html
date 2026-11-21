@@ -4,8 +4,11 @@
 {% block width %}1200px{% endblock %}
 
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-  <h1 class="h3 mb-0">Результаты</h1>
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
+  <div>
+    <h1 class="page-title">Результаты</h1>
+    <p class="page-sub mb-0">классный журнал</p>
+  </div>
   <a class="btn btn-success" href="{% url 'quiz:export_results' %}{% if group %}?group={{ group.id }}{% endif %}">
     Скачать в Excel
   </a>
@@ -28,37 +31,35 @@
   </div>
 {% endif %}
 
-<div class="table-responsive">
-  <table class="table table-bordered table-sm align-middle bg-white">
-    <thead class="table-light">
+<div class="journal-wrap">
+  <table class="journal">
+    <thead>
       <tr>
-        <th>Ученик</th>
-        {% for t in tests %}<th class="text-center">{{ t.title }}</th>{% endfor %}
-        <th class="text-center">Итого</th>
-        <th class="text-center">Долги</th>
+        <th class="who">Ученик</th>
+        {% for t in tests %}<th>{{ t.title }}</th>{% endfor %}
+        <th>Итого</th>
+        <th>Долги</th>
       </tr>
     </thead>
     <tbody>
       {% for row in rows %}
       <tr>
-        <td class="text-nowrap">
+        <td class="who">
           {{ row.name }}
-          {% if row.groups %}<div class="small text-muted">{{ row.groups }}</div>{% endif %}
+          {% if row.groups %}<small>{{ row.groups }}</small>{% endif %}
         </td>
         {% for c in row.cells %}
-          <td class="text-center {% if c.status == 'done' %}table-success{% elif c.status == 'late' %}table-warning{% elif c.status == 'debt' %}table-danger{% endif %}">
+          <td class="mark st-{{ c.status }}">
             {% if c.attempt %}
-              <a href="{% url 'quiz:attempt_result' c.attempt.id %}" class="text-decoration-none text-body">
-                {{ c.attempt.score|floatformat:"-2" }}/{{ c.attempt.max_score|floatformat:"-2" }}
-              </a>
+              <a href="{% url 'quiz:attempt_result' c.attempt.id %}">{{ c.attempt.score|floatformat:"-2" }}/{{ c.attempt.max_score|floatformat:"-2" }}</a>
             {% elif c.status == 'debt' %}долг
-            {% elif c.status == 'waiting' %}<span class="text-muted">ждём</span>
-            {% else %}<span class="text-muted">—</span>
+            {% elif c.status == 'waiting' %}ждём
+            {% else %}—
             {% endif %}
           </td>
         {% endfor %}
-        <td class="text-center fw-semibold">{{ row.total|floatformat:"-2" }}/{{ row.total_max|floatformat:"-2" }}</td>
-        <td class="text-center {% if row.debts %}text-danger fw-semibold{% endif %}">{{ row.debts }}</td>
+        <td class="total">{{ row.total|floatformat:"-2" }}/{{ row.total_max|floatformat:"-2" }}</td>
+        <td class="debts {% if row.debts %}has{% endif %}">{{ row.debts }}</td>
       </tr>
       {% empty %}
       <tr><td colspan="99" class="text-center text-muted py-4">Учеников пока нет.</td></tr>
@@ -67,10 +68,11 @@
   </table>
 </div>
 
-<p class="small text-muted">
-  <span class="badge text-bg-success">&nbsp;</span> сдано вовремя ·
-  <span class="badge text-bg-warning">&nbsp;</span> сдано с опозданием ·
-  <span class="badge text-bg-danger">&nbsp;</span> долг (срок прошёл) ·
-  «ждём» — срок ещё не наступил · «—» — тест не назначен
-</p>
+<div class="legend">
+  <span><i class="l-done"></i>сдано вовремя</span>
+  <span><i class="l-late"></i>сдано с опозданием</span>
+  <span><i class="l-debt"></i>долг (срок прошёл)</span>
+  <span>«ждём»: срок ещё не наступил</span>
+  <span>«—»: тест не назначен</span>
+</div>
 {% endblock %}

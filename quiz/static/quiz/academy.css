@@ -1,0 +1,552 @@
+/*
+  Учебный стиль ClassQuiz: тетрадь в клетку и красная ручка преподавателя.
+  Палитра: бумага, синие чернила, красная ручка, жёлтый маркер, поля тетради.
+  Шрифты: Spectral (заголовки), Golos Text (текст), Caveat (пометки от руки).
+*/
+:root {
+  --paper: #fbfcff;
+  --grid: #d8e2f4;
+  --ink: #1b2a55;
+  --ink-soft: #52618c;
+  --navy: #14214a;
+  --margin: #e8707f;
+  --pen: #c8283c;
+  --hl: #ffe680;
+  --ok: #23865a;
+  --ok-bg: #e3f4ea;
+  --late: #a96a00;
+  --late-bg: #fff2cc;
+  --debt-bg: #fde4e7;
+  --cell: 24px;
+  --serif: 'Spectral', Georgia, 'Times New Roman', serif;
+  --sans: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --hand: 'Caveat', 'Segoe Script', 'Comic Sans MS', cursive;
+  --shadow: 3px 3px 0 rgba(27, 42, 85, .14);
+}
+
+html { background: var(--paper); }
+
+body {
+  font-family: var(--sans);
+  color: var(--ink);
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: var(--cell) var(--cell);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* Красные поля тетради */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; bottom: 0; left: 44px;
+  width: 2px;
+  background: var(--margin);
+  opacity: .55;
+  pointer-events: none;
+  z-index: 0;
+}
+@media (max-width: 720px) {
+  body::before { left: 8px; }
+}
+
+h1, h2, h3, h4, h5, .h1, .h2, .h3, .h4, .h5 {
+  font-family: var(--serif);
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -.01em;
+}
+
+/* Заголовок страницы подчёркнут жёлтым маркером */
+.page-title {
+  display: inline;
+  font-size: clamp(1.7rem, 4.5vw, 2.4rem);
+  line-height: 1.35;
+  background: linear-gradient(transparent 62%, var(--hl) 62%, var(--hl) 92%, transparent 92%);
+  padding: 0 .15em;
+  margin-left: -.15em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.page-sub {
+  font-family: var(--hand);
+  font-size: 1.5rem;
+  color: var(--pen);
+  line-height: 1.1;
+  margin: .55rem 0 1.4rem;
+}
+
+.text-muted, .text-secondary { color: var(--ink-soft) !important; }
+
+a { color: var(--ink); }
+a:hover { color: var(--pen); }
+
+:focus-visible {
+  outline: 3px solid var(--hl);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--ink);
+}
+
+/* ---------- Шапка ---------- */
+.academy-nav {
+  position: relative;
+  z-index: 2;
+  background: var(--navy);
+  color: #fff;
+  border-bottom: 4px double #e6c76a;
+  padding: .6rem 0;
+}
+.academy-nav .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  color: #fff;
+  text-decoration: none;
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 1.3rem;
+  letter-spacing: -.01em;
+}
+.academy-nav .brand:hover { color: #fff; }
+.academy-nav .brand svg { flex: none; }
+.academy-nav .btn {
+  --bs-btn-border-radius: 4px;
+  font-family: var(--sans);
+  font-weight: 500;
+  box-shadow: none;
+}
+.academy-nav .btn-outline-light {
+  --bs-btn-color: #fff;
+  --bs-btn-border-color: rgba(255, 255, 255, .45);
+  --bs-btn-hover-color: var(--navy);
+  --bs-btn-hover-bg: #fff;
+  --bs-btn-hover-border-color: #fff;
+}
+.academy-nav .btn-light {
+  --bs-btn-bg: #e6c76a;
+  --bs-btn-border-color: #e6c76a;
+  --bs-btn-color: var(--navy);
+  --bs-btn-hover-bg: #f2d98a;
+  --bs-btn-hover-border-color: #f2d98a;
+  --bs-btn-hover-color: var(--navy);
+}
+
+.page { position: relative; z-index: 1; padding-top: 1.6rem; }
+
+/* ---------- Карточки-листки ---------- */
+.card {
+  --bs-card-border-radius: 4px;
+  --bs-card-border-color: var(--ink);
+  --bs-card-bg: #fff;
+  border: 1.5px solid var(--ink);
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+  background: #fff;
+}
+
+/* ---------- Кнопки ---------- */
+.btn {
+  --bs-btn-border-radius: 4px;
+  font-weight: 600;
+  border-width: 1.5px;
+  transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease;
+}
+.btn-primary {
+  --bs-btn-bg: var(--ink);
+  --bs-btn-border-color: var(--ink);
+  --bs-btn-hover-bg: var(--navy);
+  --bs-btn-hover-border-color: var(--navy);
+  --bs-btn-active-bg: var(--navy);
+  --bs-btn-active-border-color: var(--navy);
+  --bs-btn-disabled-bg: var(--ink-soft);
+  --bs-btn-disabled-border-color: var(--ink-soft);
+  box-shadow: 3px 3px 0 var(--margin);
+}
+.btn-primary:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--margin); }
+.btn-primary:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--margin); }
+.btn-success {
+  --bs-btn-bg: var(--ok);
+  --bs-btn-border-color: var(--ok);
+  --bs-btn-hover-bg: #1b6e49;
+  --bs-btn-hover-border-color: #1b6e49;
+  box-shadow: 3px 3px 0 rgba(35, 134, 90, .3);
+}
+.btn-outline-secondary {
+  --bs-btn-color: var(--ink);
+  --bs-btn-border-color: var(--ink);
+  --bs-btn-hover-bg: var(--ink);
+  --bs-btn-hover-border-color: var(--ink);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-active-bg: var(--ink);
+  --bs-btn-active-border-color: var(--ink);
+}
+
+/* ---------- Поля ввода ---------- */
+.form-control, .form-select {
+  border: 1.5px solid var(--ink);
+  border-radius: 4px;
+  color: var(--ink);
+  background-color: #fff;
+}
+.form-control:focus, .form-select:focus {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 .22rem var(--hl);
+}
+.form-label { font-weight: 600; }
+
+/* Ответ, написанный «от руки» на строчке */
+.answer-line {
+  font-family: var(--hand);
+  font-size: 1.7rem;
+  line-height: 1.2;
+  color: #1d3fa8;
+  border: 0;
+  border-bottom: 2px solid var(--ink);
+  border-radius: 0;
+  background: transparent;
+  padding: .2rem .1rem;
+}
+.answer-line:focus {
+  border-bottom-color: var(--pen);
+  box-shadow: none;
+  background: rgba(255, 230, 128, .35);
+}
+
+/* Варианты ответа */
+.choice {
+  display: flex;
+  align-items: flex-start;
+  gap: .6rem;
+  padding: .55rem .7rem;
+  margin: 0 -.7rem .15rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color .12s ease;
+}
+.choice:hover { background: rgba(27, 42, 85, .05); }
+.choice:has(input:checked) { background: var(--hl); }
+.choice input {
+  flex: none;
+  width: 1.4rem;
+  height: 1.4rem;
+  margin-top: .1rem;
+  accent-color: var(--ink);
+}
+.choice span { line-height: 1.35; }
+
+/* Номер задания */
+.task-num {
+  flex: none;
+  width: 2.2rem;
+  height: 2.2rem;
+  display: inline-grid;
+  place-items: center;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  font-family: var(--serif);
+  font-weight: 700;
+  background: var(--paper);
+}
+.task-meta { color: var(--ink-soft); font-size: .85rem; }
+
+/* ---------- Штампы статуса ---------- */
+.stamp {
+  display: inline-block;
+  padding: .12rem .55rem;
+  border: 2px solid currentColor;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: .85rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  transform: rotate(-3deg);
+  background: #fff;
+}
+.stamp-debt { color: var(--pen); }
+.stamp-waiting { color: var(--ink); }
+.stamp-late { color: var(--late); }
+.stamp-done { color: var(--ok); }
+
+/* ---------- Оценка от руки ---------- */
+.grade-mark {
+  font-family: var(--hand);
+  font-weight: 700;
+  color: var(--pen);
+  line-height: 1;
+}
+.grade-small {
+  display: inline-grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border: 2px solid var(--pen);
+  border-radius: 50%;
+  font-size: 1.9rem;
+  transform: rotate(-5deg);
+  flex: none;
+}
+
+/* ---------- Кабинет ученика ---------- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: #fff;
+  border: 1.5px solid var(--ink);
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+  margin-bottom: 1.6rem;
+}
+.stats > div { padding: .7rem .5rem .6rem; text-align: center; }
+.stats > div + div { border-left: 2px dashed var(--grid); }
+.stats .num {
+  font-family: var(--hand);
+  font-weight: 700;
+  font-size: 2.6rem;
+  line-height: 1;
+}
+.stats .num.bad { color: var(--pen); }
+.stats .lbl { font-size: .82rem; color: var(--ink-soft); }
+
+.task-card {
+  position: relative;
+  padding-left: .4rem;
+  margin-bottom: .9rem;
+  overflow: hidden;
+}
+.task-card::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 8px;
+  background: var(--ink);
+}
+.task-card.is-debt::before { background: var(--pen); }
+.task-card.is-late::before { background: #e0a100; }
+.task-card.is-done::before { background: var(--ok); }
+.task-card .card-body { padding: 1rem 1rem 1rem 1.1rem; }
+.task-card h2 { font-size: 1.25rem; margin-bottom: .2rem; }
+
+/* ---------- Журнал результатов ---------- */
+.journal-wrap {
+  overflow-x: auto;
+  background: #fff;
+  border: 1.5px solid var(--ink);
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+}
+.journal {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 0;
+}
+.journal th, .journal td {
+  padding: .6rem .8rem;
+  border-bottom: 1px solid var(--grid);
+  border-right: 1px solid var(--grid);
+  vertical-align: middle;
+}
+.journal thead th {
+  background: var(--navy);
+  color: #fff;
+  font-family: var(--serif);
+  font-weight: 600;
+  text-align: center;
+  border-color: rgba(255, 255, 255, .15);
+  min-width: 7rem;
+}
+.journal thead th:first-child { text-align: left; }
+.journal tbody tr:last-child td { border-bottom: 0; }
+.journal th:last-child, .journal td:last-child { border-right: 0; }
+.journal .who {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: #fff;
+  min-width: 10rem;
+  font-weight: 600;
+  box-shadow: 2px 0 0 var(--grid);
+}
+.journal thead .who { background: var(--navy); }
+.journal .who small { display: block; font-weight: 400; color: var(--ink-soft); }
+.journal td.mark {
+  text-align: center;
+  font-family: var(--hand);
+  font-weight: 700;
+  font-size: 1.6rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+.journal td.mark a { text-decoration: none; color: inherit; display: block; }
+.journal td.mark a:hover { text-decoration: underline wavy; }
+.journal td.st-done { background: var(--ok-bg); color: var(--ok); }
+.journal td.st-late { background: var(--late-bg); color: var(--late); }
+.journal td.st-debt { background: var(--debt-bg); color: var(--pen); }
+.journal td.st-waiting, .journal td.st-none { color: var(--ink-soft); font-size: 1.3rem; }
+.journal td.total { text-align: center; font-weight: 700; }
+.journal td.debts { text-align: center; font-weight: 700; }
+.journal td.debts.has { color: var(--pen); }
+
+.legend { display: flex; flex-wrap: wrap; gap: .4rem 1.1rem; font-size: .85rem; color: var(--ink-soft); margin-top: .9rem; }
+.legend i {
+  display: inline-block;
+  width: 1rem; height: 1rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 3px;
+  vertical-align: -.2em;
+  margin-right: .35rem;
+}
+.legend .l-done { background: var(--ok-bg); }
+.legend .l-late { background: var(--late-bg); }
+.legend .l-debt { background: var(--debt-bg); }
+
+/* ---------- Результат попытки ---------- */
+.verdict {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 1.6rem;
+  padding: 1.4rem 1.6rem;
+}
+.pen-circle {
+  position: relative;
+  width: 150px;
+  height: 130px;
+  flex: none;
+}
+.pen-circle svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.pen-circle path {
+  fill: none;
+  stroke: var(--pen);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: pen-draw 1.1s cubic-bezier(.5, .1, .3, 1) .35s forwards;
+}
+.pen-circle .grade-mark {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 6.2rem;
+  transform: rotate(-6deg);
+  opacity: 0;
+  animation: grade-in .35s ease-out .15s forwards;
+}
+@keyframes pen-draw { to { stroke-dashoffset: 0; } }
+@keyframes grade-in { from { opacity: 0; transform: rotate(-6deg) scale(1.35); } to { opacity: 1; transform: rotate(-6deg) scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .pen-circle path { animation: none; stroke-dashoffset: 0; }
+  .pen-circle .grade-mark { animation: none; opacity: 1; }
+}
+.verdict .score { font-family: var(--serif); font-weight: 700; font-size: clamp(1.8rem, 6vw, 2.5rem); line-height: 1.1; }
+.verdict .who { color: var(--ink-soft); }
+@media (max-width: 480px) {
+  .verdict { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+}
+
+.review {
+  position: relative;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+.review::before {
+  content: '';
+  position: absolute; top: 0; bottom: 0; left: 0; width: 8px;
+  background: var(--ok);
+}
+.review.is-partial::before { background: #e0a100; }
+.review.is-wrong::before { background: var(--pen); }
+.review .card-body { padding: 1rem 1rem 1rem 1.4rem; }
+.review h2 { font-size: 1.15rem; }
+.review .pts {
+  font-family: var(--hand);
+  font-weight: 700;
+  font-size: 1.7rem;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--ok);
+}
+.review.is-partial .pts { color: var(--late); }
+.review.is-wrong .pts { color: var(--pen); }
+.review dt { font-weight: 500; color: var(--ink-soft); font-size: .85rem; }
+.review dd { margin: 0 0 .6rem; }
+.teacher-note {
+  margin-top: .8rem;
+  padding: .5rem .8rem;
+  border-left: 3px solid var(--pen);
+  background: #fff5f6;
+  color: var(--pen);
+  font-family: var(--hand);
+  font-size: 1.45rem;
+  line-height: 1.2;
+}
+.teacher-note b { font-family: var(--sans); font-size: .8rem; font-weight: 600; display: block; color: var(--ink-soft); }
+
+/* ---------- Вход ---------- */
+.login-wrap {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+  min-height: 62vh;
+}
+.login-hello .big {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: clamp(2.2rem, 6vw, 3.6rem);
+  line-height: 1.08;
+  letter-spacing: -.02em;
+}
+.login-hello .hand {
+  font-family: var(--hand);
+  font-size: 2rem;
+  color: var(--pen);
+  line-height: 1.15;
+  margin-top: 1rem;
+  transform: rotate(-2deg);
+  transform-origin: left;
+}
+.login-hello .hand svg { display: block; margin-top: .2rem; }
+.login-card { padding: 0; }
+.login-card .tab {
+  background: var(--navy);
+  color: #fff;
+  padding: .7rem 1.2rem;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.2rem;
+  border-radius: 2px 2px 0 0;
+}
+.login-card form { padding: 1.3rem 1.2rem 1.4rem; }
+@media (max-width: 800px) {
+  .login-wrap { grid-template-columns: 1fr; gap: 1.6rem; min-height: 0; }
+  .login-hello .hand svg { display: none; }
+}
+
+/* ---------- Прочее ---------- */
+.alert { border: 1.5px solid var(--ink); border-radius: 4px; color: var(--ink); }
+.alert-danger { background: var(--debt-bg); border-color: var(--pen); }
+.alert-info { background: #e8f0ff; }
+.alert-success { background: var(--ok-bg); }
+.alert-warning { background: var(--late-bg); }
+
+.deadline {
+  display: inline-block;
+  font-family: var(--hand);
+  font-size: 1.5rem;
+  color: var(--pen);
+  line-height: 1.1;
+  margin-bottom: 1.2rem;
+}
+.sheet-intro { max-width: 60ch; }

@@ -3,27 +3,33 @@
 {% block title %}Результат: {{ attempt.test.title }}{% endblock %}
 
 {% block content %}
-<h1 class="h3">{{ attempt.test.title }}</h1>
+<h1 class="page-title">{{ attempt.test.title }}</h1>
 
-<div class="card mb-4">
-  <div class="card-body text-center">
-    <div class="text-muted">{{ attempt.student_name }}</div>
-    <div class="display-5">{{ attempt.score|floatformat:"-2" }} из {{ attempt.max_score|floatformat:"-2" }}</div>
+<div class="card verdict mt-4 mb-4">
+  <div class="pen-circle" title="Оценка по пятибалльной шкале">
+    <svg viewBox="0 0 150 130" aria-hidden="true">
+      <path pathLength="1" d="M20 70 C 10 30, 60 6, 105 14 C 148 22, 152 76, 100 108 C 56 130, 6 106, 14 64 C 20 34, 56 14, 84 14"/>
+    </svg>
+    <span class="grade-mark">{% include 'quiz/_grade.html' with p=percent %}</span>
+  </div>
+  <div>
+    <div class="who">{{ attempt.student_name }}</div>
+    <div class="score">{{ attempt.score|floatformat:"-2" }} из {{ attempt.max_score|floatformat:"-2" }}</div>
     <div class="text-muted">{{ percent }}%</div>
-    <div class="small text-muted mt-1">
+    <div class="small text-muted mt-2">
       Сдано {{ attempt.created_at|date:"d.m.Y H:i" }}
-      {% if attempt.is_late %}<span class="badge text-bg-warning">с опозданием</span>{% endif %}
+      {% if attempt.is_late %}<span class="stamp stamp-late ms-1">с опозданием</span>{% endif %}
     </div>
   </div>
 </div>
 
 {% for a in answers %}
   {% if a.earned >= a.question.points %}
-    {% include 'quiz/_answer_card.html' with a=a color='success' label='Верно' %}
+    {% include 'quiz/_answer_card.html' with a=a state='ok' label='Верно' %}
   {% elif a.earned > 0 %}
-    {% include 'quiz/_answer_card.html' with a=a color='warning' label='Частично верно' %}
+    {% include 'quiz/_answer_card.html' with a=a state='partial' label='Частично верно' %}
   {% else %}
-    {% include 'quiz/_answer_card.html' with a=a color='danger' label='Неверно' %}
+    {% include 'quiz/_answer_card.html' with a=a state='wrong' label='Неверно' %}
   {% endif %}
 {% endfor %}
 

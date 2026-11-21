@@ -3,13 +3,13 @@
 {% block title %}{{ test.title }}{% endblock %}
 
 {% block content %}
-<h1 class="h3">{{ test.title }}</h1>
-<p class="text-muted mb-2">{{ test.description }}</p>
+<h1 class="page-title">{{ test.title }}</h1>
+{% if test.description %}<p class="text-muted sheet-intro mt-3 mb-2">{{ test.description }}</p>{% endif %}
 
-<p class="small {% if is_overdue %}text-danger{% else %}text-muted{% endif %}">
+<div class="deadline {% if is_overdue %}text-danger{% endif %}">
   Срок сдачи: {{ assignment.due_date|date:"d.m.Y H:i" }}
-  {% if is_overdue %}· срок прошёл, но тест можно сдать, он будет отмечен как сданный с опозданием{% endif %}
-</p>
+  {% if is_overdue %}<br><span class="small" style="font-family: var(--sans);">Срок прошёл, но тест можно сдать, он будет отмечен как сданный с опозданием.</span>{% endif %}
+</div>
 
 <form method="post" onsubmit="this.querySelector('button[type=submit]').disabled = true;">
   {% csrf_token %}
@@ -17,30 +17,35 @@
   {% for q in questions %}
   <div class="card mb-3">
     <div class="card-body">
-      <h5 class="mb-1">{{ forloop.counter }}. {{ q.text }}</h5>
-      <p class="text-muted small">{{ q.get_qtype_display }} · баллов: {{ q.points }}</p>
+      <div class="d-flex gap-3 align-items-start mb-2">
+        <span class="task-num">{{ forloop.counter }}</span>
+        <div>
+          <h2 class="h5 mb-1">{{ q.text }}</h2>
+          <div class="task-meta">{{ q.get_qtype_display }} · баллов: {{ q.points }}</div>
+        </div>
+      </div>
 
       {% if q.qtype == 'single' %}
         {% for c in q.choices.all %}
-        <div class="form-check mb-1">
-          <input class="form-check-input" type="radio" name="q_{{ q.id }}" id="c{{ c.id }}" value="{{ c.id }}">
-          <label class="form-check-label" for="c{{ c.id }}">{{ c.text }}</label>
-        </div>
+        <label class="choice" for="c{{ c.id }}">
+          <input type="radio" name="q_{{ q.id }}" id="c{{ c.id }}" value="{{ c.id }}">
+          <span>{{ c.text }}</span>
+        </label>
         {% endfor %}
 
       {% elif q.qtype == 'multiple' %}
         {% for c in q.choices.all %}
-        <div class="form-check mb-1">
-          <input class="form-check-input" type="checkbox" name="q_{{ q.id }}" id="c{{ c.id }}" value="{{ c.id }}">
-          <label class="form-check-label" for="c{{ c.id }}">{{ c.text }}</label>
-        </div>
+        <label class="choice" for="c{{ c.id }}">
+          <input type="checkbox" name="q_{{ q.id }}" id="c{{ c.id }}" value="{{ c.id }}">
+          <span>{{ c.text }}</span>
+        </label>
         {% endfor %}
 
       {% elif q.qtype == 'text' %}
-        <input type="text" class="form-control" name="q_{{ q.id }}" autocomplete="off">
+        <input type="text" class="form-control answer-line" name="q_{{ q.id }}" autocomplete="off" aria-label="Ваш ответ" placeholder="Ваш ответ">
 
       {% elif q.qtype == 'number' %}
-        <input type="text" inputmode="decimal" class="form-control" name="q_{{ q.id }}" autocomplete="off">
+        <input type="text" inputmode="decimal" class="form-control answer-line" name="q_{{ q.id }}" autocomplete="off" aria-label="Ваш ответ" placeholder="Число">
 
       {% elif q.qtype == 'match' %}
         {% for p in q.pairs.all %}

@@ -1,24 +1,33 @@
 {% extends 'quiz/base.html' %}
 
 {% block title %}Вход{% endblock %}
+{% block width %}980px{% endblock %}
 
 {% block content %}
-<div class="card mx-auto" style="max-width: 420px;">
-  <div class="card-body">
-    <h1 class="h4 mb-3">Вход</h1>
+<div class="login-wrap">
+  <div class="login-hello">
+    <div class="big">Тесты, которые проверяются сами</div>
+    <div class="hand">
+      Решите задания, получите оценку и разбор ошибок.
+      <svg width="220" height="14" viewBox="0 0 220 14" fill="none" aria-hidden="true">
+        <path d="M2 9c18-9 30 6 48-2s30 5 48-2 30 6 48-2 30 4 48-1 20 2 26 0" stroke="#c8283c" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </div>
 
-    {% if form.errors %}
-      <div class="alert alert-danger">Неверный логин или пароль. Попробуйте ещё раз.</div>
-    {% endif %}
-
+  <div class="card login-card">
+    <div class="tab">Вход</div>
     <form method="post">
       {% csrf_token %}
+      {% if form.errors %}
+        <div class="alert alert-danger">Неверный логин или пароль. Попробуйте ещё раз.</div>
+      {% endif %}
       <div class="mb-3">
         <label class="form-label" for="id_username">Логин</label>
         <input type="text" name="username" id="id_username" class="form-control"
                autofocus autocapitalize="none" autocomplete="username" required>
       </div>
-      <div class="mb-3">
+      <div class="mb-4">
         <label class="form-label" for="id_password">Пароль</label>
         <input type="password" name="password" id="id_password" class="form-control"
                autocomplete="current-password" required>

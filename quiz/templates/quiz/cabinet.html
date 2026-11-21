@@ -3,65 +3,62 @@
 {% block title %}Мои задания{% endblock %}
 
 {% block content %}
-<h1 class="h3 mb-1">Мои задания</h1>
-<p class="text-muted">{{ user.get_full_name|default:user.username }}</p>
+<h1 class="page-title">Мои задания</h1>
+<p class="page-sub">{{ user.get_full_name|default:user.username }}</p>
 
-<div class="row g-2 mb-4 text-center">
-  <div class="col-4">
-    <div class="card"><div class="card-body py-2">
-      <div class="h4 mb-0 {% if debts %}text-danger{% endif %}">{{ debts }}</div>
-      <div class="small text-muted">долгов</div>
-    </div></div>
+<div class="stats">
+  <div>
+    <div class="num {% if debts %}bad{% endif %}">{{ debts }}</div>
+    <div class="lbl">долгов</div>
   </div>
-  <div class="col-4">
-    <div class="card"><div class="card-body py-2">
-      <div class="h4 mb-0">{{ waiting }}</div>
-      <div class="small text-muted">к сдаче</div>
-    </div></div>
+  <div>
+    <div class="num">{{ waiting }}</div>
+    <div class="lbl">к сдаче</div>
   </div>
-  <div class="col-4">
-    <div class="card"><div class="card-body py-2">
-      <div class="h4 mb-0">{% if avg_percent is not None %}{{ avg_percent }}%{% else %}—{% endif %}</div>
-      <div class="small text-muted">средний %</div>
-    </div></div>
+  <div>
+    <div class="num">{% if avg_percent is not None %}{{ avg_percent }}%{% else %}—{% endif %}</div>
+    <div class="lbl">средний %</div>
   </div>
 </div>
 
 {% for it in items %}
-  <div class="card mb-2 {% if it.status == 'debt' %}border-danger{% elif it.status == 'waiting' %}border-primary{% elif it.status == 'late' %}border-warning{% else %}border-success{% endif %}">
+  <div class="card task-card {% if it.status == 'debt' %}is-debt{% elif it.status == 'late' %}is-late{% elif it.status == 'done' %}is-done{% endif %}">
     <div class="card-body">
-      <div class="d-flex justify-content-between align-items-start gap-2">
+      <div class="d-flex justify-content-between align-items-start gap-3">
         <div>
-          <h5 class="mb-1">{{ it.assignment.test.title }}</h5>
+          <h2>{{ it.assignment.test.title }}</h2>
           <div class="small text-muted">
             {{ it.assignment.group.name }} · срок: {{ it.assignment.due_date|date:"d.m.Y H:i" }}
           </div>
         </div>
         {% if it.status == 'debt' %}
-          <span class="badge text-bg-danger">Долг</span>
+          <span class="stamp stamp-debt">Долг</span>
         {% elif it.status == 'waiting' %}
-          <span class="badge text-bg-primary">К сдаче</span>
+          <span class="stamp stamp-waiting">К сдаче</span>
         {% elif it.status == 'late' %}
-          <span class="badge text-bg-warning">Сдано с опозданием</span>
+          <span class="stamp stamp-late">Сдано с опозданием</span>
         {% else %}
-          <span class="badge text-bg-success">Сдано</span>
+          <span class="stamp stamp-done">Сдано</span>
         {% endif %}
       </div>
 
       {% if it.attempt %}
-        <div class="d-flex justify-content-between align-items-center mt-2">
-          <div>
-            Результат: <b>{{ it.attempt.score|floatformat:"-2" }} из {{ it.attempt.max_score|floatformat:"-2" }}</b>
-            ({{ it.attempt.percent }}%)
+        <div class="d-flex justify-content-between align-items-center gap-3 mt-3">
+          <div class="d-flex align-items-center gap-3">
+            <span class="grade-mark grade-small" title="Оценка по пятибалльной шкале">{% include 'quiz/_grade.html' with p=it.attempt.percent %}</span>
+            <div>
+              Результат: <b>{{ it.attempt.score|floatformat:"-2" }} из {{ it.attempt.max_score|floatformat:"-2" }}</b>
+              <span class="text-muted">({{ it.attempt.percent }}%)</span>
+            </div>
           </div>
           <a class="btn btn-sm btn-outline-secondary" href="{% url 'quiz:attempt_result' it.attempt.id %}">Разбор</a>
         </div>
       {% else %}
-        <a class="btn btn-primary w-100 mt-2" href="{% url 'quiz:take' it.assignment.id %}">Пройти тест</a>
+        <a class="btn btn-primary w-100 mt-3" href="{% url 'quiz:take' it.assignment.id %}">Пройти тест</a>
       {% endif %}
     </div>
   </div>
 {% empty %}
-  <p class="text-muted">Заданий пока нет.</p>
+  <p class="text-muted">Заданий пока нет. Когда преподаватель назначит тест, он появится здесь.</p>
 {% endfor %}
 {% endblock %}
