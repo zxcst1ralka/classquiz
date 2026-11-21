@@ -4,14 +4,15 @@
 
 {% block content %}
 <h1 class="h3">{{ test.title }}</h1>
-<p class="text-muted">{{ test.description }}</p>
+<p class="text-muted mb-2">{{ test.description }}</p>
 
-<form method="post">
+<p class="small {% if is_overdue %}text-danger{% else %}text-muted{% endif %}">
+  Срок сдачи: {{ assignment.due_date|date:"d.m.Y H:i" }}
+  {% if is_overdue %}· срок прошёл, но тест можно сдать, он будет отмечен как сданный с опозданием{% endif %}
+</p>
+
+<form method="post" onsubmit="this.querySelector('button[type=submit]').disabled = true;">
   {% csrf_token %}
-    <div class="mb-3">
-    <label class="form-label">Ваше имя</label>
-    <input type="text" name="student_name" class="form-control" required maxlength="100">
-  </div>
 
   {% for q in questions %}
   <div class="card mb-3">
@@ -39,7 +40,7 @@
         <input type="text" class="form-control" name="q_{{ q.id }}" autocomplete="off">
 
       {% elif q.qtype == 'number' %}
-        <input type="number" step="any" class="form-control" name="q_{{ q.id }}">
+        <input type="text" inputmode="decimal" class="form-control" name="q_{{ q.id }}" autocomplete="off">
 
       {% elif q.qtype == 'match' %}
         {% for p in q.pairs.all %}

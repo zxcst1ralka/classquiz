@@ -1,5 +1,5 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
 
 
 class Test(models.Model):
@@ -93,7 +93,53 @@ class MatchPair(models.Model):
 
     def __str__(self):
         return f'{self.left} → {self.right}'
-        
+
+
+class StudentGroup(models.Model):
+    """Группа учеников. Тест назначается группе целиком."""
+    name = models.CharField('Название группы', max_length=100, unique=True)
+    students = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, blank=True,
+        related_name='student_groups', verbose_name='Ученики',
+        limit_choices_to={'is_staff': False},
+    )
+
+    class Meta:
+        verbose_name = 'Группа учеников'
+        verbose_name_plural = 'Группы учеников'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class Assignment(models.Model):
+    """Назначение: «этот тест нужно сдать этой группе до такого-то срока»."""
+    test = models.ForeignKey(
+        Test, on_delete=models.CASCADE,
+        related_name='assignments', verbose_name='Тест'
+    )
+    group = models.ForeignKey(
+        StudentGroup, on_delete=models.CASCADE,
+        related_name='assignments', verbose_name='Группа'
+    )
+    due_date = models.DateTimeField('Сдать до')
+    created_at = models.DateTimeField('Назначено', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Назначение теста'
+        verbose_name_plural = 'Назначения тестов'
+        ordering = ['due_date']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['test', 'group'], name='unique_test_per_group'
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.test.title} → {self.group.name} (до {self.due_date:%d.%m.%Y})'
+
+
 class Attempt(models.Model):
     test = models.ForeignKey(
         Test, on_delete=models.CASCADE,
@@ -102,6 +148,11 @@ class Attempt(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True,
         on_delete=models.SET_NULL, verbose_name='Пользователь'
+    )
+    assignment = models.ForeignKey(
+        Assignment, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='attempts',
+        verbose_name='Задание'
     )
     student_name = models.CharField('Имя ученика', max_length=100, blank=True)
     score = models.FloatField('Набрано баллов', default=0)
@@ -115,6 +166,15 @@ class Attempt(models.Model):
 
     def __str__(self):
         return f'{self.student_name} — {self.test.title}'
+
+    @property
+    def percent(self):
+        return round(self.score / self.max_score * 100) if self.max_score else 0
+
+    @property
+    def is_late(self):
+        """Сдано после срока (только для попыток, привязанных к заданию)."""
+        return bool(self.assignment_id and self.created_at > self.assignment.due_date)
 
 
 class AttemptAnswer(models.Model):

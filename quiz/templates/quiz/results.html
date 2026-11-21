@@ -1,0 +1,76 @@
+{% extends 'quiz/base.html' %}
+
+{% block title %}Результаты{% endblock %}
+{% block width %}1200px{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h3 mb-0">Результаты</h1>
+  <a class="btn btn-success" href="{% url 'quiz:export_results' %}{% if group %}?group={{ group.id }}{% endif %}">
+    Скачать в Excel
+  </a>
+</div>
+
+<form method="get" class="mb-3" style="max-width: 320px;">
+  <select name="group" class="form-select" onchange="this.form.submit()" aria-label="Группа">
+    <option value="">Все ученики</option>
+    {% for g in groups %}
+      <option value="{{ g.id }}" {% if group and group.id == g.id %}selected{% endif %}>{{ g.name }}</option>
+    {% endfor %}
+  </select>
+  <noscript><button type="submit" class="btn btn-secondary btn-sm mt-2">Показать</button></noscript>
+</form>
+
+{% if not tests %}
+  <div class="alert alert-info">
+    Пока ни один тест не назначен. В админке создайте группу, добавьте в неё учеников
+    и назначьте группе тест со сроком сдачи.
+  </div>
+{% endif %}
+
+<div class="table-responsive">
+  <table class="table table-bordered table-sm align-middle bg-white">
+    <thead class="table-light">
+      <tr>
+        <th>Ученик</th>
+        {% for t in tests %}<th class="text-center">{{ t.title }}</th>{% endfor %}
+        <th class="text-center">Итого</th>
+        <th class="text-center">Долги</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td class="text-nowrap">
+          {{ row.name }}
+          {% if row.groups %}<div class="small text-muted">{{ row.groups }}</div>{% endif %}
+        </td>
+        {% for c in row.cells %}
+          <td class="text-center {% if c.status == 'done' %}table-success{% elif c.status == 'late' %}table-warning{% elif c.status == 'debt' %}table-danger{% endif %}">
+            {% if c.attempt %}
+              <a href="{% url 'quiz:attempt_result' c.attempt.id %}" class="text-decoration-none text-body">
+                {{ c.attempt.score|floatformat:"-2" }}/{{ c.attempt.max_score|floatformat:"-2" }}
+              </a>
+            {% elif c.status == 'debt' %}долг
+            {% elif c.status == 'waiting' %}<span class="text-muted">ждём</span>
+            {% else %}<span class="text-muted">—</span>
+            {% endif %}
+          </td>
+        {% endfor %}
+        <td class="text-center fw-semibold">{{ row.total|floatformat:"-2" }}/{{ row.total_max|floatformat:"-2" }}</td>
+        <td class="text-center {% if row.debts %}text-danger fw-semibold{% endif %}">{{ row.debts }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="99" class="text-center text-muted py-4">Учеников пока нет.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<p class="small text-muted">
+  <span class="badge text-bg-success">&nbsp;</span> сдано вовремя ·
+  <span class="badge text-bg-warning">&nbsp;</span> сдано с опозданием ·
+  <span class="badge text-bg-danger">&nbsp;</span> долг (срок прошёл) ·
+  «ждём» — срок ещё не наступил · «—» — тест не назначен
+</p>
+{% endblock %}

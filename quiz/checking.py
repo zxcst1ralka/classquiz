@@ -86,3 +86,33 @@ def check_question(q, post):
     if q.qtype == 'match':
         return _check_match(q, post)
     return 0, '', ''
+
+def validate_question(q):
+    """
+    Проверяет, что вопрос заполнен правильно.
+    Возвращает текст проблемы или None, если всё в порядке.
+    """
+    if q.qtype in ('single', 'multiple'):
+        choices = list(q.choices.all())
+        correct = [c for c in choices if c.is_correct]
+        if len(choices) < 2:
+            return 'нужно минимум два варианта ответа.'
+        if not correct:
+            return 'не отмечен ни один правильный вариант.'
+        if q.qtype == 'single' and len(correct) > 1:
+            return 'для типа «Один ответ» правильным должен быть только один вариант.'
+
+    elif q.qtype in ('text', 'number'):
+        answers = list(q.accepted_answers.all())
+        if not answers:
+            return 'не заполнен блок «Допустимые ответы» (иначе любой ответ ученика будет неверным).'
+        if q.qtype == 'number':
+            bad = [a.value for a in answers if parse_number(a.value) is None]
+            if bad:
+                return 'в числовом вопросе допустимый ответ не является числом: ' + ', '.join(bad)
+
+    elif q.qtype == 'match':
+        if q.pairs.count() < 2:
+            return 'для соотнесения нужно минимум две пары.'
+
+    return None

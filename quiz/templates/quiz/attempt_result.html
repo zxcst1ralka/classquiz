@@ -10,6 +10,10 @@
     <div class="text-muted">{{ attempt.student_name }}</div>
     <div class="display-5">{{ attempt.score|floatformat:"-2" }} из {{ attempt.max_score|floatformat:"-2" }}</div>
     <div class="text-muted">{{ percent }}%</div>
+    <div class="small text-muted mt-1">
+      Сдано {{ attempt.created_at|date:"d.m.Y H:i" }}
+      {% if attempt.is_late %}<span class="badge text-bg-warning">с опозданием</span>{% endif %}
+    </div>
   </div>
 </div>
 
@@ -23,5 +27,9 @@
   {% endif %}
 {% endfor %}
 
-<a href="{% url 'quiz:test_list' %}" class="btn btn-outline-secondary w-100">К списку тестов</a>
+{% if user.is_staff %}
+  <a href="{% url 'quiz:results' %}" class="btn btn-outline-secondary w-100">К таблице результатов</a>
+{% else %}
+  <a href="{% url 'quiz:cabinet' %}" class="btn btn-outline-secondary w-100">К моим заданиям</a>
+{% endif %}
 {% endblock %}

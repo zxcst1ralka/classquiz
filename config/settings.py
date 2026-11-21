@@ -126,3 +126,12 @@ MAILERS = {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+
+# Вход и выход
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'quiz:home'
+LOGOUT_REDIRECT_URL = 'login'
+
+# Куда команда backup_db складывает резервные копии базы
+BACKUP_DIR = BASE_DIR / 'backups'
