@@ -49,7 +49,7 @@
           {% if row.groups %}<small>{{ row.groups }}</small>{% endif %}
         </td>
         {% for c in row.cells %}
-          <td class="mark st-{{ c.status }}">
+          <td class="cell-mark st-{{ c.status }}">
             {% if c.attempt %}
               <a href="{% url 'quiz:attempt_result' c.attempt.id %}">{{ c.attempt.score|floatformat:"-2" }}/{{ c.attempt.max_score|floatformat:"-2" }}</a>
             {% elif c.status == 'debt' %}долг

@@ -372,7 +372,7 @@ a:hover { color: var(--pen); }
 }
 .journal thead .who { background: var(--navy); }
 .journal .who small { display: block; font-weight: 400; color: var(--ink-soft); }
-.journal td.mark {
+.journal td.cell-mark {
   text-align: center;
   font-family: var(--hand);
   font-weight: 700;
@@ -380,8 +380,8 @@ a:hover { color: var(--pen); }
   line-height: 1;
   white-space: nowrap;
 }
-.journal td.mark a { text-decoration: none; color: inherit; display: block; }
-.journal td.mark a:hover { text-decoration: underline wavy; }
+.journal td.cell-mark a { text-decoration: none; color: inherit; display: block; }
+.journal td.cell-mark a:hover { text-decoration: underline wavy; }
 .journal td.st-done { background: var(--ok-bg); color: var(--ok); }
 .journal td.st-late { background: var(--late-bg); color: var(--late); }
 .journal td.st-debt { background: var(--debt-bg); color: var(--pen); }
