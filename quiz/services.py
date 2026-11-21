@@ -1,9 +1,11 @@
 from collections import defaultdict
 
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.utils import timezone
 
-from .models import Assignment, Attempt, StudentGroup
+from .checking import check_question
+from .models import Assignment, Attempt, AttemptAnswer, StudentGroup
 
 
 def display_name(user):
@@ -102,3 +104,36 @@ def build_results(group=None):
 
     attempts.sort(key=lambda a: a.created_at, reverse=True)
     return {'tests': tests, 'rows': rows, 'attempts': attempts}
+
+
+def submit_attempt(user, assignment, post, questions=None):
+    """
+    Сохраняет сдачу теста: проверяет каждый вопрос, считает баллы, записывает ответы.
+    `post` это данные формы (request.POST). Возвращает созданную попытку.
+    """
+    test = assignment.test
+    if questions is None:
+        questions = list(test.questions.prefetch_related('choices', 'pairs', 'accepted_answers'))
+
+    with transaction.atomic():
+        attempt = Attempt.objects.create(
+            test=test,
+            user=user,
+            assignment=assignment,
+            student_name=display_name(user)[:100],
+        )
+        total = 0
+        max_total = 0
+        for q in questions:
+            earned, given, correct = check_question(q, post)
+            AttemptAnswer.objects.create(
+                attempt=attempt, question=q,
+                given=given, correct_text=correct, earned=earned,
+            )
+            total += earned
+            max_total += q.points
+
+        attempt.score = round(total, 2)
+        attempt.max_score = max_total
+        attempt.save()
+    return attempt

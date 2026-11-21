@@ -1,7 +1,8 @@
 from datetime import timedelta
-from io import BytesIO
+from io import BytesIO, StringIO
 
 from django.contrib.auth import get_user_model
+from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -419,3 +420,24 @@ class AdminPagesTests(QuizFixture):
         }
         resp = self.client.post(reverse('admin:quiz_question_add'), data, follow=True)
         self.assertContains(resp, 'есть проблема')
+
+
+class SeedDemoTests(TestCase):
+    def test_demo_data_is_created_once_and_consistent(self):
+        call_command('seed_demo', stdout=StringIO())
+        call_command('seed_demo', stdout=StringIO())          # повторный запуск ничего не дублирует
+        self.assertEqual(Test.objects.count(), 2)
+        self.assertEqual(Attempt.objects.count(), 3)
+
+        rows = {r['name']: [c['status'] for c in r['cells']] for r in build_results()['rows']}
+        self.assertEqual(rows['Иван Петров'], ['done', 'late'])
+        self.assertEqual(rows['Мария Соколова'], ['done', 'debt'])
+        self.assertEqual(rows['Олег Смирнов'], ['waiting', 'debt'])
+
+        scores = {a.student_name: a.score for a in Attempt.objects.filter(test__title='Демо: общий тест')}
+        self.assertEqual(scores, {'Иван Петров': 6, 'Мария Соколова': 4})
+
+    def test_demo_users_can_log_in(self):
+        call_command('seed_demo', stdout=StringIO())
+        self.assertTrue(self.client.login(username='teacher', password='demo12345'))
+        self.assertEqual(self.client.get(reverse('quiz:results')).status_code, 200)

@@ -4,14 +4,12 @@ from functools import wraps
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from django.db import transaction
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from .checking import check_question
-from .models import Assignment, Attempt, AttemptAnswer, StudentGroup
-from .services import build_results, display_name
+from .models import Assignment, Attempt, StudentGroup
+from .services import build_results, submit_attempt
 
 def staff_required(view):
     """
@@ -109,27 +107,7 @@ def take_assignment(request, assignment_id):
     )
 
     if request.method == 'POST':
-        with transaction.atomic():
-            attempt = Attempt.objects.create(
-                test=test,
-                user=request.user,
-                assignment=assignment,
-                student_name=display_name(request.user)[:100],
-            )
-            total = 0
-            max_total = 0
-            for q in questions:
-                earned, given, correct = check_question(q, request.POST)
-                AttemptAnswer.objects.create(
-                    attempt=attempt, question=q,
-                    given=given, correct_text=correct, earned=earned,
-                )
-                total += earned
-                max_total += q.points
-
-            attempt.score = round(total, 2)
-            attempt.max_score = max_total
-            attempt.save()
+        attempt = submit_attempt(request.user, assignment, request.POST, questions)
         return redirect('quiz:attempt_result', attempt_id=attempt.id)
 
     # Для соотнесения перемешиваем правые части, чтобы они не шли по порядку

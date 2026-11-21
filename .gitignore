@@ -3,4 +3,9 @@ __pycache__/
 db.sqlite3
 .env
 backups/
+staticfiles/
 check_log.txt
+# временные файлы для проверок
+_*.bat
+_*.txt
+demo_db.sqlite3

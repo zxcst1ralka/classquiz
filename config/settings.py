@@ -10,22 +10,49 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import os
 from pathlib import Path
+
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
+def _load_dotenv(path):
+    """
+    Читает файл .env (строки вида КЛЮЧ=значение) в переменные окружения.
+    Нужен, чтобы хранить пароли и секретный ключ вне кода. Сторонние библиотеки не требуются.
+    """
+    if not path.exists():
+        return
+    for line in path.read_text(encoding='utf-8').splitlines():
+        line = line.strip()
+        if not line or line.startswith('#') or '=' not in line:
+            continue
+        key, _, value = line.partition('=')
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-vidfmbdqx+n_-zphjhj7gt@h=#-v)+vv*r+j*pv&dlern_k$!3'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+def _env_list(name):
+    return [item.strip() for item in os.environ.get(name, '').split(',') if item.strip()]
 
-ALLOWED_HOSTS = []
+
+_load_dotenv(BASE_DIR / '.env')
+
+# По умолчанию включён режим разработки. На сервере в .env ставьте DJANGO_DEBUG=0.
+DEBUG = os.environ.get('DJANGO_DEBUG', '1') == '1'
+
+# Секретный ключ. На сервере он обязателен и берётся из .env.
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = 'django-insecure-local-development-key-only'
+    else:
+        raise ImproperlyConfigured('Задайте DJANGO_SECRET_KEY в файле .env (см. .env.example).')
+
+ALLOWED_HOSTS = _env_list('DJANGO_ALLOWED_HOSTS')
+CSRF_TRUSTED_ORIGINS = _env_list('DJANGO_CSRF_TRUSTED_ORIGINS')
 
 
 # Application definition
@@ -73,12 +100,26 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if os.environ.get('DB_NAME'):
+    # PostgreSQL (для сервера). Нужен пакет psycopg, см. requirements-prod.txt
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ['DB_NAME'],
+            'USER': os.environ.get('DB_USER', ''),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
+        }
     }
-}
+else:
+    # SQLite (для разработки и небольшой нагрузки)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.environ.get('SQLITE_PATH', BASE_DIR / 'db.sqlite3'),
+        }
+    }
 
 
 # Password validation
@@ -116,16 +157,32 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'   # сюда collectstatic собирает файлы админки для сервера
 
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
-MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
-}
+# Сайт письма не отправляет. Настройка нужна, чтобы Django не жаловался на «заготовку для разработки».
+if DEBUG:
+    MAILERS = {
+        'default': {
+            'BACKEND': 'django.core.mail.backends.console.EmailBackend',
+        },
+    }
+else:
+    _smtp_options = {'host': os.environ.get('EMAIL_HOST', 'localhost')}
+    if os.environ.get('EMAIL_USER'):
+        _smtp_options['username'] = os.environ['EMAIL_USER']
+        _smtp_options['password'] = os.environ.get('EMAIL_PASSWORD', '')
+    if os.environ.get('EMAIL_USE_TLS', '0') == '1':
+        _smtp_options['use_tls'] = True
+    MAILERS = {
+        'default': {
+            'BACKEND': 'django.core.mail.backends.smtp.EmailBackend',
+            'OPTIONS': _smtp_options,
+        },
+    }
 
 
 # Вход и выход
@@ -135,3 +192,11 @@ LOGOUT_REDIRECT_URL = 'login'
 
 # Куда команда backup_db складывает резервные копии базы
 BACKUP_DIR = BASE_DIR / 'backups'
+
+# Настройки безопасности, которые включаются только на сервере (DJANGO_DEBUG=0)
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')   # сайт стоит за nginx
+    SECURE_SSL_REDIRECT = os.environ.get('DJANGO_SSL_REDIRECT', '1') == '1'
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = int(os.environ.get('DJANGO_HSTS_SECONDS', '0'))
